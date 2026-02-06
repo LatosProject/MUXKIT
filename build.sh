@@ -35,6 +35,12 @@ build_arch() {
     local arch=$1
     local cmake_args=""
 
+    local os=$(uname -s)
+    local nproc_cmd="nproc"
+    if [ "$os" = "Darwin" ]; then
+        nproc_cmd="sysctl -n hw.ncpu"
+    fi
+
     case $arch in
         native)
             echo "=== Building for native architecture ==="
@@ -46,15 +52,23 @@ build_arch() {
             echo "=== Building for amd64 ==="
             mkdir -p "$BUILD_DIR/amd64"
             cd "$BUILD_DIR/amd64"
-            # 需要安装: apt install gcc-x86-64-linux-gnu
-            cmake ../.. -DCMAKE_C_COMPILER=x86_64-linux-gnu-gcc -DTARGET_ARCH=x86_64
+            if [ "$os" = "Darwin" ]; then
+                cmake ../.. -DCMAKE_OSX_ARCHITECTURES=x86_64 -DTARGET_ARCH=x86_64
+            else
+                # 需要安装: apt install gcc-x86-64-linux-gnu
+                cmake ../.. -DCMAKE_C_COMPILER=x86_64-linux-gnu-gcc -DTARGET_ARCH=x86_64
+            fi
             ;;
         arm64)
             echo "=== Building for arm64 ==="
             mkdir -p "$BUILD_DIR/arm64"
             cd "$BUILD_DIR/arm64"
-            # 需要安装: apt install gcc-aarch64-linux-gnu
-            cmake ../.. -DCMAKE_C_COMPILER=aarch64-linux-gnu-gcc -DTARGET_ARCH=aarch64
+            if [ "$os" = "Darwin" ]; then
+                cmake ../.. -DCMAKE_OSX_ARCHITECTURES=arm64 -DTARGET_ARCH=aarch64
+            else
+                # 需要安装: apt install gcc-aarch64-linux-gnu
+                cmake ../.. -DCMAKE_C_COMPILER=aarch64-linux-gnu-gcc -DTARGET_ARCH=aarch64
+            fi
             ;;
         *)
             echo "Unknown architecture: $arch"
@@ -62,7 +76,7 @@ build_arch() {
             ;;
     esac
 
-    make -j$(nproc)
+    make -j$($nproc_cmd)
     cd ../..
 
     echo "Built: $BUILD_DIR/$arch/muxkit-$VERSION-*"

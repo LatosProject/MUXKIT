@@ -32,6 +32,49 @@ muxkit 依赖以下库：
 
 ### 安装
 
+#### Homebrew (macOS / Linux)
+
+```bash
+brew tap LatosProject/muxkit https://github.com/LatosProject/muxkit.git
+brew install muxkit
+```
+
+#### AUR (Arch Linux)
+
+```bash
+# 使用 AUR 助手（如 yay）
+yay -S muxkit
+
+# 或手动安装
+git clone https://github.com/LatosProject/muxkit.git
+cd muxkit/aur
+makepkg -si
+```
+
+#### Debian / Ubuntu
+
+```bash
+# 从源码构建 .deb 包
+git clone https://github.com/LatosProject/muxkit.git
+cd muxkit
+dpkg-buildpackage -us -uc -b
+sudo dpkg -i ../muxkit_0.4.3-1_*.deb
+```
+
+#### Fedora / RHEL
+
+```bash
+# 安装构建依赖
+sudo dnf install cmake gcc make
+
+# 从源码构建并安装
+git clone https://github.com/LatosProject/muxkit.git
+cd muxkit
+cmake -B build -S . -DCMAKE_BUILD_TYPE=Release
+cmake --build build
+sudo install -m 755 build/muxkit /usr/local/bin/muxkit
+```
+
 #### 从源码编译
 
 从源码构建和安装 muxkit：
@@ -100,6 +143,8 @@ muxkit -h
 prefix d detach_session
 prefix % new_pane
 prefix o next_pane
+prefix [ scroll_up
+prefix ] scroll_down
 ```
 
 可用的操作：

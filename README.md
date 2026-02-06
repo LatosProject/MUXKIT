@@ -32,6 +32,49 @@ To build muxkit, you need:
 
 ### Installation
 
+#### Homebrew (macOS / Linux)
+
+```bash
+brew tap LatosProject/muxkit https://github.com/LatosProject/muxkit.git
+brew install muxkit
+```
+
+#### AUR (Arch Linux)
+
+```bash
+# Using an AUR helper (e.g., yay)
+yay -S muxkit
+
+# Or manually
+git clone https://github.com/LatosProject/muxkit.git
+cd muxkit/aur
+makepkg -si
+```
+
+#### Debian / Ubuntu
+
+```bash
+# Build .deb package from source
+git clone https://github.com/LatosProject/muxkit.git
+cd muxkit
+dpkg-buildpackage -us -uc -b
+sudo dpkg -i ../muxkit_0.4.3-1_*.deb
+```
+
+#### Fedora / RHEL
+
+```bash
+# Install build dependencies
+sudo dnf install cmake gcc make
+
+# Build and install from source
+git clone https://github.com/LatosProject/muxkit.git
+cd muxkit
+cmake -B build -S . -DCMAKE_BUILD_TYPE=Release
+cmake --build build
+sudo install -m 755 build/muxkit /usr/local/bin/muxkit
+```
+
 #### From Source
 
 To build and install muxkit from source:
@@ -100,6 +143,8 @@ Example `keybinds.conf`:
 prefix d detach_session
 prefix % new_pane
 prefix o next_pane
+prefix [ scroll_up
+prefix ] scroll_down
 ```
 
 Available actions:

@@ -1,0 +1,19 @@
+Source: muxkit
+Section: utils
+Priority: optional
+Maintainer: LatosProject <https://github.com/LatosProject>
+Build-Depends: debhelper-compat (= 13), cmake (>= 3.10)
+Standards-Version: 4.6.0
+Homepage: https://github.com/LatosProject/muxkit
+Rules-Requires-Root: no
+
+Package: muxkit
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}
+Description: Lightweight terminal multiplexer written in C
+ muxkit enables multiple terminal sessions to be created, accessed,
+ and controlled from a single screen. Sessions can be detached and
+ continue running in the background, then later reattached.
+ .
+ Features include session management, multiple panes, scrollback
+ history, internationalization, and daemon mode.
