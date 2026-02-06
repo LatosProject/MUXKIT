@@ -1,0 +1,36 @@
+# Build directories
+build/
+cmake-build-*/
+CMakeFiles/
+cmake_install.cmake
+CMakeCache.txt
+Makefile
+compile_commands.json
+
+# Build outputs
+muxkit
+muxkit-*-*
+
+# IDE directories
+.vscode/
+.idea/
+.cache/
+.cmake/
+
+# macOS
+.DS_Store
+*.swp
+
+# History files
+.history/
+
+# Temporary files
+*.o
+*.a
+*.so
+*.dylib
+*.log
+*.tmp
+
+# Testing
+Testing/
