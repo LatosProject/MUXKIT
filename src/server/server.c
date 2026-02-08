@@ -176,7 +176,6 @@ int server_receive(int fd) {
       log_error("protocol version mismatch: client=%d, server=%d",
                 server_version, *client_version);
       free(buf);
-      close(fd);
       return -1;
     }
     write(fd, &server_version, sizeof(server_version));
