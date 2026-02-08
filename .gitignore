@@ -16,6 +16,7 @@ muxkit-*-*
 .idea/
 .cache/
 .cmake/
+.claude/
 
 # macOS
 .DS_Store

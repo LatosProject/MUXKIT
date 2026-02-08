@@ -67,12 +67,12 @@ static const char *messages_en[MSG_COUNT] = {
     [MSG_HELP_EX_KILL] = "  %s -k 0      Kill session 0\n",
 
     /* 错误信息 - 各类操作失败时显示 */
-    [MSG_ERR_MKDIR] = "mkdir failed",
-    [MSG_ERR_STAT] = "stat failed",
-    [MSG_ERR_FORK] = "Fork failed",
-    [MSG_ERR_OPEN_PTY] = "open slave pty failed",
-    [MSG_ERR_EXEC] = "Execve failed",
-    [MSG_ERR_PROTOCOL_VERSION] = "protocol version mismatch",
+    [MSG_ERR_MKDIR] = "mkdir failed\n",
+    [MSG_ERR_STAT] = "stat failed\n",
+    [MSG_ERR_FORK] = "Fork failed\n",
+    [MSG_ERR_OPEN_PTY] = "open slave pty failed\n",
+    [MSG_ERR_EXEC] = "Execve failed\n",
+    [MSG_ERR_PROTOCOL_VERSION] = "protocol version mismatch\n",
 
     /* 会话管理 - 会话列表和操作反馈 */
     [MSG_SESSION_FORMAT] = "%d: %s (pid %d)\n",
@@ -118,12 +118,12 @@ static const char *messages_zh[MSG_COUNT] = {
     [MSG_HELP_EX_KILL] = "  %s -k 0      终止会话 0\n",
 
     /* 错误信息 - 各类操作失败时显示 */
-    [MSG_ERR_MKDIR] = "创建目录失败",
-    [MSG_ERR_STAT] = "获取文件状态失败",
-    [MSG_ERR_FORK] = "创建进程失败",
-    [MSG_ERR_OPEN_PTY] = "打开伪终端失败",
-    [MSG_ERR_EXEC] = "执行程序失败",
-    [MSG_ERR_PROTOCOL_VERSION] = "协议版本错误",
+    [MSG_ERR_MKDIR] = "创建目录失败\n",
+    [MSG_ERR_STAT] = "获取文件状态失败\n",
+    [MSG_ERR_FORK] = "创建进程失败\n",
+    [MSG_ERR_OPEN_PTY] = "打开伪终端失败\n",
+    [MSG_ERR_EXEC] = "执行程序失败\n",
+    [MSG_ERR_PROTOCOL_VERSION] = "协议版本错误\n",
 
     /* 会话管理 - 会话列表和操作反馈 */
     [MSG_SESSION_FORMAT] = "%d: %s (进程号 %d)\n",
