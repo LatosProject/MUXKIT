@@ -41,13 +41,14 @@
  * SOFTWARE.
  */
 
+#include <cstring>
 #define _XOPEN_SOURCE 700
-#include "server.h"
 #include "i18n.h"
 #include "list.h"
 #include "log.h"
 #include "main.h"
 #include "muxkit-protocol.h"
+#include "server.h"
 #include "spawn.h"
 #include "util.h"
 #include <errno.h>
@@ -168,6 +169,20 @@ int server_receive(int fd) {
     }
   }
 
+  if (hdr.type == MSG_VERSION) {
+    int server_version = PROTOCOL_VERSION;
+    int *client_version = (int *)buf;
+    if (server_version != *client_version) {
+      log_error("protocol version mismatch: client=%d, server=%d",
+                server_version, *client_version);
+      free(buf);
+      close(fd);
+      return -1;
+    }
+    write(fd, &server_version, sizeof(server_version));
+    free(buf);
+    return 1;
+  }
   // 列出会话列表
   if (hdr.type == MSG_LIST_SESSIONS) {
     char response[MUXKIT_BUF_XLARGE] = {0};

@@ -584,6 +584,19 @@ int client_main(struct client *c) {
   extern int list_sessions;
   extern int kill_session_id;
   struct window *w = NULL;
+  int client_version = PROTOCOL_VERSION;
+  int server_version = 0;
+  // 协议版本校验
+  send_server(MSG_VERSION, server_fd, &client_version, sizeof(client_version));
+  if (read(server_fd, &server_version, sizeof(server_version)) <= 0 ||
+      server_version != PROTOCOL_VERSION) {
+    write(STDOUT_FILENO, TR(MSG_ERR_PROTOCOL_VERSION),
+          strlen(TR(MSG_ERR_PROTOCOL_VERSION)));
+    close(server_fd);
+    log_close();
+    return 0;
+  }
+
   // 列出所有 session
   if (list_sessions) {
     send_server(MSG_LIST_SESSIONS, server_fd, NULL, 0);
@@ -619,6 +632,7 @@ int client_main(struct client *c) {
     return 0;
   }
 
+  // attach 指定 session
   if (detached_session_id != -1) {
     send_server(MSG_DETACH, server_fd, &detached_session_id,
                 sizeof(detached_session_id));
