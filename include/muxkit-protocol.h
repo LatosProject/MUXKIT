@@ -40,7 +40,7 @@
 #pragma once
 #include <stddef.h>
 
-#define PROTOCOL_VERSION 0
+#define PROTOCOL_VERSION 2
 
 /**
  * 消息类型枚举
@@ -52,7 +52,7 @@ enum msgtype {
   MSG_IDENTIFY_FLAGS = 100,
   MSG_IDENTIFY_TERM,
   MSG_IDENTIFY_TTYNAME,
-  MSG_IDENTIFY_OLDCWD,      /* unused */
+  MSG_IDENTIFY_OLDCWD, /* unused */
   MSG_IDENTIFY_STDIN,
   MSG_IDENTIFY_ENVIRON,
   MSG_IDENTIFY_DONE,
@@ -76,9 +76,9 @@ enum msgtype {
   MSG_RESIZE,
   MSG_SHELL,
   MSG_SHUTDOWN,
-  MSG_OLDSTDERR,            /* unused */
-  MSG_OLDSTDIN,             /* unused */
-  MSG_OLDSTDOUT,            /* unused */
+  MSG_OLDSTDERR, /* unused */
+  MSG_OLDSTDIN,  /* unused */
+  MSG_OLDSTDOUT, /* unused */
   MSG_SUSPEND,
   MSG_UNLOCK,
   MSG_WAKEUP,
@@ -102,6 +102,6 @@ enum msgtype {
  * 消息头结构
  */
 struct msg_header {
-  enum msgtype type;  /* 消息类型 */
-  size_t len;         /* 负载长度 */
+  enum msgtype type; /* 消息类型 */
+  size_t len;        /* 负载长度 */
 };

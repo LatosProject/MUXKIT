@@ -41,8 +41,8 @@
  * SOFTWARE.
  */
 
-#include <cstring>
 #define _XOPEN_SOURCE 700
+#include <string.h>
 #include "i18n.h"
 #include "list.h"
 #include "log.h"

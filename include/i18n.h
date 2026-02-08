@@ -39,8 +39,8 @@
  * 语言枚举
  */
 typedef enum {
-  LANG_EN,  /* English */
-  LANG_ZH,  /* 中文 */
+  LANG_EN, /* English */
+  LANG_ZH, /* 中文 */
 } language_t;
 
 /**
@@ -74,6 +74,7 @@ typedef enum {
   MSG_ERR_FORK,
   MSG_ERR_OPEN_PTY,
   MSG_ERR_EXEC,
+  MSG_ERR_PROTOCOL_VERSION,
 
   /* 会话管理 */
   MSG_SESSION_FORMAT,
@@ -90,7 +91,7 @@ typedef enum {
   MSG_WINDOW_NEW,
   MSG_WINDOW_ATTACHED,
 
-  MSG_COUNT  /* 消息总数 */
+  MSG_COUNT /* 消息总数 */
 } message_id_t;
 
 /**
