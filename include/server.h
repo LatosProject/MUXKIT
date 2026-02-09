@@ -32,6 +32,7 @@
 
 #define MAX_CLIENTS 64 // 最大客户端连接数
 #define MAX_PANES 64
+#define MAX_MSG_PAYLOAD (1 << 20)
 #include "list.h"
 #include <stdint.h>
 #include <sys/ioctl.h>

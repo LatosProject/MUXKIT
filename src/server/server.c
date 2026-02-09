@@ -174,6 +174,10 @@ int server_receive(int fd) {
 
   // 读取消息体
   char *buf = NULL;
+  if (hdr.len > MAX_MSG_PAYLOAD) {
+    log_error("payload too large: %zu", hdr.len);
+    return -1;
+  }
   if (hdr.len > 0) {
     buf = malloc(hdr.len);
     if (!buf) {
