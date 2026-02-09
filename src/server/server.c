@@ -42,13 +42,12 @@
  */
 
 #define _XOPEN_SOURCE 700
-#include <string.h>
+#include "server.h"
 #include "i18n.h"
 #include "list.h"
 #include "log.h"
 #include "main.h"
 #include "muxkit-protocol.h"
-#include "server.h"
 #include "spawn.h"
 #include "util.h"
 #include <errno.h>
@@ -83,7 +82,20 @@ ssize_t read_n(int fd, void *buf, size_t n) {
   }
   return recvd;
 }
-
+ssize_t write_n(int fd, const void *buf, size_t n) {
+  size_t sent = 0;
+  const char *p = buf;
+  while (sent < n) {
+    ssize_t w = write(fd, p + sent, n - sent);
+    if (w == -1) {
+      if (errno == EINTR)
+        continue;
+      return -1;
+    }
+    sent += w;
+  }
+  return sent;
+}
 /*
   服务端信号处理器
 */
@@ -91,6 +103,8 @@ void server_signal_handler(int sig) {
   switch (sig) {
   case SIGCHLD:
     sigchld_pending = 1; // 主循环处理
+    break;
+  case SIGPIPE:
     break;
   }
 }
@@ -155,17 +169,20 @@ int server_receive(int fd) {
   struct msg_header hdr;
   if (read_n(fd, &hdr, sizeof(hdr)) != sizeof(hdr)) {
     log_error("read header failed: %s", strerror(errno));
-    return -1;
+    goto cleanup;
   }
 
   // 读取消息体
   char *buf = NULL;
   if (hdr.len > 0) {
     buf = malloc(hdr.len);
+    if (!buf) {
+      log_error("malloc failed");
+      return -1;
+    }
     if (read_n(fd, buf, hdr.len) != hdr.len) {
       log_error("read payload failed: %s", strerror(errno));
-      free(buf);
-      return -1;
+      goto cleanup;
     }
   }
 
@@ -175,10 +192,12 @@ int server_receive(int fd) {
     if (server_version != *client_version) {
       log_error("protocol version mismatch: client=%d, server=%d",
                 server_version, *client_version);
-      free(buf);
-      return -1;
+      goto cleanup;
     }
-    write(fd, &server_version, sizeof(server_version));
+    if (write_n(fd, &server_version, sizeof(server_version)) < 0) {
+      log_error("write server version failed: %s", strerror(errno));
+      goto cleanup;
+    }
     free(buf);
     return 1;
   }
@@ -204,12 +223,13 @@ int server_receive(int fd) {
     }
 
     size_t len = strlen(response) + 1;
-    write(fd, &len, sizeof(len));
-    write(fd, response, len);
+    if (write_n(fd, &len, sizeof(len)) < 0 || write_n(fd, response, len) < 0) {
+      log_error("write session list failed: %s", strerror(errno));
+      goto cleanup;
+    }
 
     log_info("listed %d sessions", count);
-    free(buf);
-    return -1; // 关闭连接
+    goto cleanup;
   }
 
   // 杀死指定会话
@@ -244,11 +264,11 @@ int server_receive(int fd) {
     }
 
     size_t len = strlen(response) + 1;
-    write(fd, &len, sizeof(len));
-    write(fd, response, len);
-
-    free(buf);
-    return -1; // 关闭连接
+    if (write_n(fd, &len, sizeof(len)) < 0 || write_n(fd, response, len) < 0) {
+      log_error("write kill-session response failed: %s", strerror(errno));
+      goto cleanup;
+    }
+    goto cleanup;
   }
 
   // 消息类型需要关联 session
@@ -342,8 +362,7 @@ int server_receive(int fd) {
     list_for_each_entry(sess, &session_list, link) {
       log_info("session id=%d, pid=%d", sess->id, sess->slave_pid);
     }
-    free(buf);
-    return -1;
+    goto cleanup;
     break;
   case MSG_DETACH:
     if (hdr.len == 0) {
@@ -363,7 +382,11 @@ int server_receive(int fd) {
         log_debug("attaching to detached session id=%d, pane_count=%d",
                   target->id, target->pane_count);
         // 先发送 pane 数量
-        write(fd, &target->pane_count, sizeof(int));
+        if (write_n(fd, &target->pane_count, sizeof(int)) < 0) {
+          log_error("write pane_count failed: %s", strerror(errno));
+          free(buf);
+          return -1;
+        }
         // 再发送所有 pane 的 fd
         for (int i = 0; i < target->pane_count; i++) {
           send_fd(fd, target->master_fds[i]);
@@ -380,17 +403,31 @@ int server_receive(int fd) {
           log_info("attach: grid_data[%d]=%p, len=%zd", i, target->grid_data[i],
                    target->grid_data_len[i]);
         }
-        write(fd, &grid_count, sizeof(grid_count));
+        if (write_n(fd, &grid_count, sizeof(grid_count)) < 0) {
+          log_error("write grid_count failed: %s", strerror(errno));
+          free(buf);
+          return -1;
+        }
         for (int i = 0; i < target->pane_count; i++) {
           if (target->grid_data[i] && target->grid_data_len[i] > 0) {
             struct msg_header gh = {MSG_GRID_SAVE, target->grid_data_len[i]};
             log_info("attach: sending grid header type=%d, len=%zu", gh.type,
                      gh.len);
-            ssize_t hdr_written = write(fd, &gh, sizeof(gh));
-            log_info("attach: header write returned %zd", hdr_written);
+            ssize_t hdr_written = write_n(fd, &gh, sizeof(gh));
+            if (hdr_written < 0) {
+              log_error("write grid header failed: %s", strerror(errno));
+              free(buf);
+              return -1;
+            }
+            log_info("attach: header write_n returned %zd", hdr_written);
             ssize_t data_written =
-                write(fd, target->grid_data[i], target->grid_data_len[i]);
-            log_info("attach: data write returned %zd (expected %zd)",
+                write_n(fd, target->grid_data[i], target->grid_data_len[i]);
+            if (data_written < 0) {
+              log_error("write grid data failed: %s", strerror(errno));
+              free(buf);
+              return -1;
+            }
+            log_info("attach: data write_n returned %zd (expected %zd)",
                      data_written, target->grid_data_len[i]);
             free(target->grid_data[i]);
             target->grid_data[i] = NULL;
@@ -404,7 +441,11 @@ int server_receive(int fd) {
                  session_id);
         // 发送失败标记：pane_count = 0
         int zero = 0;
-        write(fd, &zero, sizeof(int));
+        if (write_n(fd, &zero, sizeof(int)) < 0) {
+          log_error("write attach failure marker failed: %s", strerror(errno));
+          free(buf);
+          return -1;
+        }
       }
     }
     free(buf);
@@ -429,9 +470,13 @@ int server_receive(int fd) {
   default:
     log_warn("unknown msgtype %d", hdr.type);
   }
-
   free(buf);
   return 1;
+
+cleanup:
+  if (buf)
+    free(buf);
+  return -1;
 }
 
 /*
@@ -446,7 +491,7 @@ void server_loop(int listen_fd) {
   sa.sa_flags = 0; // 不用 SA_RESTART，让 select 被信号打断
   sigemptyset(&sa.sa_mask);
   sigaction(SIGCHLD, &sa, NULL);
-
+  sigaction(SIGPIPE, &sa, NULL);
   fd_set read_fds;
   int max_fd;
   int client_fds[MAX_CLIENTS] = {-1};
