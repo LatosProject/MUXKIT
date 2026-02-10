@@ -55,14 +55,13 @@
 #include <unistd.h>
 #define CURSOR_HIDE "\033[?25l"
 #define CURSOR_SHOW "\033[?25h"
-#define DEFAULT_HISTORY_SIZE 1000 // 默认保存1000行历史
-
 /*
   历史初始化
  */
 void grid_init_history(struct grid *g, unsigned int max_lines) {
   g->history_cells = calloc(max_lines * g->width, sizeof(struct cell));
-  g->history_size = DEFAULT_HISTORY_SIZE;
+  g->history_line_flags = calloc(max_lines, sizeof(uint8_t));
+  g->history_size = max_lines;
   g->scroll_offset = 0;
   g->history_count = 0;
 }
@@ -97,6 +96,10 @@ void grid_free_history(struct grid *g) {
   if (g->history_cells) {
     free(g->history_cells);
     g->history_cells = NULL;
+  }
+  if (g->history_line_flags) {
+    free(g->history_line_flags);
+    g->history_line_flags = NULL;
   }
   g->history_count = 0;
   g->scroll_offset = 0;
@@ -506,6 +509,179 @@ int grid_deserialize(struct grid *g, unsigned int *pane_id, unsigned int *cx,
   } else {
     g->history_cells = NULL;
   }
+
+  return 0;
+}
+
+/*
+  判断 cell 是否为空白（
+*/
+static int cell_is_blank(const struct cell *c) {
+  return (c->ch[0] == ' ' || c->ch[0] == 0) && (c->flags & 0x03) == 0x03 &&
+         c->attr == 0;
+}
+
+/*
+  判断 cell 是否为视觉空白
+*/
+static int cell_is_visually_blank(const struct cell *c) {
+  return c->ch[0] == ' ' || c->ch[0] == 0;
+}
+
+/*
+  根据新宽度重新调整历史缓冲区布局
+*/
+int grid_resize_history(struct grid *g, unsigned int new_width) {
+  if (!g->history_cells || g->history_size == 0 || new_width == 0)
+    return 0;
+  if (new_width == g->width)
+    return 0;
+
+  unsigned int old_width = g->width;
+  unsigned int stored =
+      (g->history_count < g->history_size) ? g->history_count : g->history_size;
+  if (stored == 0)
+    return 0;
+
+  // 获取 flags 和 lines
+  struct cell *old_lines = calloc(stored * old_width, sizeof(struct cell));
+  uint8_t *old_flags = calloc(stored, sizeof(uint8_t));
+  if (!old_lines || !old_flags) {
+    free(old_lines);
+    free(old_flags);
+    return -1;
+  }
+
+  for (unsigned int i = 0; i < stored; i++) {
+    unsigned int idx;
+    if (g->history_count <= g->history_size)
+      idx = i;
+    else
+      // ring buff
+      idx = ((g->history_count % g->history_size) + i) % g->history_size;
+    memcpy(&old_lines[i * old_width], &g->history_cells[idx * old_width],
+           old_width * sizeof(struct cell));
+    // 复制 flags
+    if (g->history_line_flags)
+      old_flags[i] = g->history_line_flags[idx];
+  }
+
+  unsigned int max_out = (stored * old_width + new_width - 1) / new_width +
+                         stored; // 最坏的情况下多空一行 + stored
+  struct cell *out_cells = calloc(max_out * new_width, sizeof(struct cell));
+  uint8_t *out_flags = calloc(max_out, sizeof(uint8_t));
+  // 单行临时缓冲区
+  struct cell *logical = calloc(stored * old_width, sizeof(struct cell));
+  if (!out_cells || !out_flags || !logical) {
+    free(old_lines);
+    free(old_flags);
+    free(out_cells);
+    free(out_flags);
+    free(logical);
+    return -1;
+  }
+
+  // 初始化 out_cells 的 flags 为默认颜色，避免 padding 单元格渲染为黑色背景
+  for (unsigned int j = 0; j < max_out * new_width; j++)
+    out_cells[j].flags = 0x03;
+
+  // reflow
+  unsigned int out_row = 0;
+  unsigned int i = 0;
+  while (i < stored) {
+    unsigned int logical_len = 0;
+
+    // 收集起始行（continuation=false 或第一行）
+    memcpy(&logical[logical_len], &old_lines[i * old_width],
+           old_width * sizeof(struct cell));
+    logical_len += old_width;
+    i++;
+
+    // 收集后续的 continuation 行（continuation=true 表示"我是前一行的延续"）
+    while (i < stored && (old_flags[i] & 0x01)) {
+      memcpy(&logical[logical_len], &old_lines[i * old_width],
+             old_width * sizeof(struct cell));
+      logical_len += old_width;
+      i++;
+    }
+
+    // 裁剪末尾空白 cell（宽松判断：只看字符内容）
+    while (logical_len > 0 && cell_is_visually_blank(&logical[logical_len - 1]))
+      logical_len--;
+
+    if (logical_len == 0) {
+      // 空逻辑行，保留一个空行
+      out_flags[out_row] = 0x00;
+      out_row++;
+      continue;
+    }
+
+    // 新行数
+    unsigned int num_new = (logical_len + new_width - 1) / new_width;
+    for (unsigned int j = 0; j < logical_len; j++)
+      // (起始行数 + j所属行) * 宽度 + 所属行第几列
+      out_cells[(out_row + j / new_width) * new_width + j % new_width] =
+          logical[j];
+
+    // 标记 flags：第一行是逻辑行起始（0x00），后续行是延续（0x01）
+    out_flags[out_row] = 0x00;
+    for (unsigned int k = 1; k < num_new; k++)
+      out_flags[out_row + k] = 0x01;
+    out_row += num_new;
+  }
+
+  free(logical);
+
+  // 裁剪末尾的全空白行（vterm resize 推入的屏幕空白填充）
+  while (out_row > 0) {
+    struct cell *row = &out_cells[(out_row - 1) * new_width];
+    int all_blank = 1;
+    for (unsigned int x = 0; x < new_width; x++) {
+      if (!cell_is_visually_blank(&row[x])) {
+        all_blank = 0;
+        break;
+      }
+    }
+    if (all_blank)
+      out_row--;
+    else
+      break;
+  }
+
+  // 取最后 history_size 行放入最终缓冲区
+  struct cell *new_hist =
+      calloc(g->history_size * new_width, sizeof(struct cell));
+  uint8_t *new_flg = calloc(g->history_size, sizeof(uint8_t));
+  if (!new_hist || !new_flg) {
+    free(old_lines);
+    free(old_flags);
+    free(out_cells);
+    free(out_flags);
+    free(new_hist);
+    free(new_flg);
+    return -1;
+  }
+
+  unsigned int keep = (out_row < g->history_size) ? out_row : g->history_size;
+  unsigned int skip = out_row - keep;
+  memcpy(new_hist, &out_cells[skip * new_width],
+         keep * new_width * sizeof(struct cell));
+  memcpy(new_flg, &out_flags[skip], keep * sizeof(uint8_t));
+
+  // 清理
+  free(old_lines);
+  free(old_flags);
+  free(out_cells);
+  free(out_flags);
+  free(g->history_cells);
+  free(g->history_line_flags);
+
+  g->history_cells = new_hist;
+  g->history_line_flags = new_flg;
+  g->history_count = keep;
+
+  if (g->scroll_offset > keep)
+    g->scroll_offset = keep;
 
   return 0;
 }

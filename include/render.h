@@ -37,6 +37,7 @@
 
 #ifndef RENDER_H
 #define RENDER_H
+#define DEFAULT_HISTORY_SIZE 1000
 
 #include "server.h"
 #include "window.h"
@@ -52,12 +53,12 @@ struct client;
  * 存储屏幕上每个字符的信息
  */
 struct cell {
-  char ch[5];     /* UTF-8 字符 (最多4字节 + null) */
-  uint8_t width;  /* 显示宽度 (1 或 2) */
-  uint8_t fg;     /* 前景色索引 (0-255) */
-  uint8_t bg;     /* 背景色索引 (0-255) */
-  uint8_t attr;   /* 属性: bit0=bold, bit1=underline, bit2=italic, bit3=reverse */
-  uint8_t flags;  /* 标志位: bit0=默认fg, bit1=默认bg */
+  char ch[5];    /* UTF-8 字符 (最多4字节 + null) */
+  uint8_t width; /* 显示宽度 (1 或 2) */
+  uint8_t fg;    /* 前景色索引 (0-255) */
+  uint8_t bg;    /* 背景色索引 (0-255) */
+  uint8_t attr; /* 属性: bit0=bold, bit1=underline, bit2=italic, bit3=reverse */
+  uint8_t flags; /* 标志位: bit0=默认fg, bit1=默认bg */
 };
 
 /**
@@ -65,26 +66,29 @@ struct cell {
  * 包含当前屏幕内容和历史滚动缓冲区
  */
 struct grid {
-  struct cell *cells;           /* cells[y * width + x] */
-  unsigned int width;           /* 网格宽度 */
-  unsigned int height;          /* 网格高度 */
+  struct cell *cells;  /* cells[y * width + x] */
+  unsigned int width;  /* 网格宽度 */
+  unsigned int height; /* 网格高度 */
 
-  struct cell *history_cells;   /* 历史缓冲区 (环形) */
-  unsigned int history_size;    /* 历史缓冲区大小 */
-  unsigned int history_count;   /* 已保存的历史行数 */
-  unsigned int scroll_offset;   /* 当前滚动偏移 */
+  struct cell *history_cells; /* 历史缓冲区 (环形) */
+  unsigned int history_size;  /* 历史缓冲区大小 */
+  unsigned int history_count; /* 已保存的历史行数 */
+  unsigned int scroll_offset; /* 当前滚动偏移 */
+
+  uint8_t *line_flags;         /* 每行一个标志 */
+  uint8_t *history_line_flags; /* 历史行标志 continuation = 0x01 else 0x00 */
 };
 
 /**
  * 屏幕状态结构体
  */
 struct screen {
-  char *title;                  /* 终端标题 */
-  char *path;                   /* 当前路径 */
-  unsigned int cx;              /* 光标 x */
-  unsigned int cy;              /* 光标 y */
-  int color;                    /* 颜色 */
-  unsigned int saved_cx;        /* 保存的光标位置 (用于 ESC 7/8) */
+  char *title;           /* 终端标题 */
+  char *path;            /* 当前路径 */
+  unsigned int cx;       /* 光标 x */
+  unsigned int cy;       /* 光标 y */
+  int color;             /* 颜色 */
+  unsigned int saved_cx; /* 保存的光标位置 (用于 ESC 7/8) */
   unsigned int saved_cy;
 };
 
@@ -156,6 +160,15 @@ void grid_init_history(struct grid *g, unsigned int max_lines);
 void grid_free_history(struct grid *g);
 
 /**
+ * @brief 根据新尺寸重新调整历史缓冲区布局
+ * 当窗口宽度改变时，重新组织历史缓冲区中的内容
+ * @param g         网格指针
+ * @param new_width 新的网格宽度
+ * @return 0 成功，-1 失败
+ */
+int grid_resize_history(struct grid *g, unsigned int new_width);
+
+/**
  * @brief 将指定行推入历史
  * 将网格中的一行复制到历史缓冲区（环形）
  * @param g    网格指针
@@ -203,8 +216,8 @@ struct cell *grid_get_display_line(struct grid *g, unsigned int y);
  * @param out_buf 输出缓冲区指针（调用者需要 free）
  * @return 序列化数据的字节数，失败返回 0
  */
-size_t grid_serialize(struct grid *g, unsigned int pane_id,
-                      unsigned int cx, unsigned int cy, void **out_buf);
+size_t grid_serialize(struct grid *g, unsigned int pane_id, unsigned int cx,
+                      unsigned int cy, void **out_buf);
 
 /**
  * @brief 反序列化屏幕网格
@@ -220,8 +233,7 @@ size_t grid_serialize(struct grid *g, unsigned int pane_id,
  * @param len      数据长度
  * @return 0 成功，-1 失败（数据格式错误）
  */
-int grid_deserialize(struct grid *g, unsigned int *pane_id,
-                     unsigned int *cx, unsigned int *cy,
-                     const void *buf, size_t len);
+int grid_deserialize(struct grid *g, unsigned int *pane_id, unsigned int *cx,
+                     unsigned int *cy, const void *buf, size_t len);
 
 #endif /* RENDER_H */

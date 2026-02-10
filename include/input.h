@@ -55,4 +55,14 @@ void pane_input(struct window_pane *p, const char *data, size_t len);
  */
 void sync_vterm_from_grid(struct window_pane *p);
 
+/**
+ * @brief 从 libvterm 同步屏幕内容到 grid
+ *
+ * 将 libvterm 解析后的屏幕内容同步到 grid 数据结构。
+ * 包括字符、颜色、属性和光标位置。
+ *
+ * @param p 窗格指针
+ */
+void sync_grid_from_vterm(struct window_pane *p);
+
 #endif /* INPUT_H */

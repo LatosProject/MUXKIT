@@ -105,7 +105,7 @@ void sync_vterm_from_grid(struct window_pane *p) {
 }
 
 // 从 libvterm 同步屏幕内容到 grid
-static void sync_grid_from_vterm(struct window_pane *p) {
+void sync_grid_from_vterm(struct window_pane *p) {
   if (!p->vts || !p->grid)
     return;
 
@@ -170,6 +170,14 @@ static void sync_grid_from_vterm(struct window_pane *p) {
   vterm_state_get_cursorpos(state, &cursor);     // 查询光标
   p->cx = (unsigned int)cursor.col;
   p->cy = (unsigned int)cursor.row;
+
+  // 同步行标志 (continuation)
+  if (p->grid->line_flags) {
+    for (unsigned int y = 0; y < p->sy; y++) {
+      const VTermLineInfo *info = vterm_state_get_lineinfo(state, y);
+      p->grid->line_flags[y] = (info && info->continuation) ? 0x01 : 0;
+    }
+  }
 }
 
 /*
