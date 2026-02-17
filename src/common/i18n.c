@@ -73,6 +73,7 @@ static const char *messages_en[MSG_COUNT] = {
     [MSG_ERR_OPEN_PTY] = "open slave pty failed\n",
     [MSG_ERR_EXEC] = "Execve failed\n",
     [MSG_ERR_PROTOCOL_VERSION] = "protocol version mismatch\n",
+    [MSG_ERR_COMMAND] = "unknown commad",
 
     /* 会话管理 - 会话列表和操作反馈 */
     [MSG_SESSION_FORMAT] = "%d: %s (pid %d)\n",
@@ -124,6 +125,7 @@ static const char *messages_zh[MSG_COUNT] = {
     [MSG_ERR_OPEN_PTY] = "打开伪终端失败\n",
     [MSG_ERR_EXEC] = "执行程序失败\n",
     [MSG_ERR_PROTOCOL_VERSION] = "协议版本错误\n",
+    [MSG_ERR_COMMAND] = "未知指令",
 
     /* 会话管理 - 会话列表和操作反馈 */
     [MSG_SESSION_FORMAT] = "%d: %s (进程号 %d)\n",

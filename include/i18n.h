@@ -75,6 +75,7 @@ typedef enum {
   MSG_ERR_OPEN_PTY,
   MSG_ERR_EXEC,
   MSG_ERR_PROTOCOL_VERSION,
+  MSG_ERR_COMMAND,
 
   /* 会话管理 */
   MSG_SESSION_FORMAT,

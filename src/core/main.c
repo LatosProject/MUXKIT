@@ -42,9 +42,11 @@
 #include "version.h"
 #include <errno.h>
 #include <fcntl.h>
+#include <getopt.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/_types/_pid_t.h>
 #include <sys/select.h>
 #include <sys/stat.h>
 #include <sys/types.h>
@@ -55,6 +57,7 @@ char *socket_path;
 int detached_session_id = -1;
 int list_sessions = 0;
 int kill_session_id = -1;
+int new_session_detach = -1;
 
 static void print_help(const char *prog) {
   printf("%s", TR(MSG_HELP_TITLE));
@@ -80,23 +83,83 @@ static void print_help(const char *prog) {
 
 int main(int argc, char *argv[]) {
   i18n_init();
+  int opt;
+  int option_index = 0;
+  static struct option long_options[] = {
+      {"h", no_argument, 0, 'h'},
+      {"help", no_argument, 0, 'h'},
 
-  if (argc == 2 &&
-      (strcmp(argv[1], "-h") == 0 || strcmp(argv[1], "--help") == 0)) {
-    print_help(argv[0]);
-    return 0;
+      {"l", no_argument, 0, 'l'},
+      {"s", required_argument, 0, 's'},
+      {"k", required_argument, 0, 'k'},
+      {"send_keys", required_argument, 0, '_'},
+      {"new-session", no_argument, 0, 'n'},
+      {"n", no_argument, 0, 'n'},
+      {"list-panes", required_argument, 0, 'p'},
+      {0, 0, 0, 0}};
+
+  while ((opt = getopt_long(argc, argv, "hls:k:_:np:", long_options,
+                            &option_index)) != -1) {
+    switch (opt) {
+    case 'h':
+      print_help(argv[0]);
+      return 0;
+    case 'l':
+      list_sessions = 1;
+      break;
+    case 's':
+      detached_session_id = strtol(optarg, NULL, 10);
+      log_info("attaching to session id=%d\n", detached_session_id);
+      break;
+    case 'k':
+      kill_session_id = strtol(optarg, NULL, 10);
+      log_info("killing session id=%d\n", kill_session_id);
+      break;
+    case '_':
+      // TODO
+      break;
+    case 'p':
+      // TODO
+      break;
+    case 'n':
+      new_session_detach = 1;
+      break;
+    case '?':
+      printf("%s", TR(MSG_ERR_COMMAND));
+      return -1;
+    default:
+      break;
+    }
   }
-  if (argc == 2 && (strcmp(argv[1], "-l") == 0 || strcmp(argv[1], "-L") == 0)) {
-    list_sessions = 1;
+
+  // 有效解析位置
+  if (optind < argc) {
+    printf("%s", TR(MSG_ERR_COMMAND));
+    return -1;
   }
-  if (argc == 3 && (strcmp(argv[1], "-s") == 0 || strcmp(argv[1], "-S") == 0)) {
-    detached_session_id = strtol(argv[2], NULL, 10);
-    log_info("attaching to session id=%d\n", detached_session_id);
+
+  if (new_session_detach == 1) {
+    pid_t pid = fork();
+    if (pid < 0) {
+      perror("fork");
+      return -1;
+    }
+    if (pid > 0) {
+      return 0; // 父进程退出
+    }
+    // 子进程
+    if (setsid() < 0) {
+      perror("setsid");
+      return -1;
+    }
+    close(STDIN_FILENO);
+    close(STDOUT_FILENO);
+    close(STDERR_FILENO);
+    open("/dev/null", O_RDONLY);
+    open("/dev/null", O_WRONLY);
+    open("/dev/null", O_WRONLY);
   }
-  if (argc == 3 && (strcmp(argv[1], "-k") == 0 || strcmp(argv[1], "-K") == 0)) {
-    kill_session_id = strtol(argv[2], NULL, 10);
-    log_info("killing session id=%d\n", kill_session_id);
-  }
+
   uid_t uid = getuid();
 
   // 初始化程序目录

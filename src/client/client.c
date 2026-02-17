@@ -579,7 +579,7 @@ int client_main(struct client *c) {
   log_info("connected to server, fd %d", server_fd);
   // 保存 server 连接 fd
   c->server_fd = server_fd;
-
+  extern int new_session_detach;
   extern int detached_session_id;
   extern int list_sessions;
   extern int kill_session_id;
@@ -759,6 +759,10 @@ int client_main(struct client *c) {
     c->ws.ws_row -= 1;
     c->pane = pane_create(w, c->ws.ws_col, c->ws.ws_row, 0, 0);
     pane_set_master_fd(c->pane, c->master_fd);
+  }
+
+  if (new_session_detach == 1) {
+    send_server(MSG_DETACH, server_fd, NULL, 0);
   }
   // 终端窗口尺寸更新
   struct sigaction sa;
