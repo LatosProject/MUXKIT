@@ -233,7 +233,8 @@ int server_receive(int fd) {
     }
 
     log_info("listed %d sessions", count);
-    goto cleanup;
+    free(buf);
+    return 1;
   }
 
   // 杀死指定会话
