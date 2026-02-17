@@ -2,8 +2,9 @@
 
 **[English](README.md) | [中文](README.zh-CN.md)**
 
----
+<img width="64" height="64" alt="logo" src="https://github.com/user-attachments/assets/c309e7ee-2f5c-466b-9270-aaf81e58e26a" />
 
+---
 Welcome to **muxkit**!
 
 muxkit is a lightweight terminal multiplexer written in C. It enables multiple terminal sessions to be created, accessed, and controlled from a single screen. muxkit sessions can be detached from the screen and continue running in the background, then later reattached.
