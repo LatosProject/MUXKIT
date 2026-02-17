@@ -53,6 +53,7 @@ static const char *messages_en[MSG_COUNT] = {
     [MSG_HELP_OPT_LIST] = "  -l         List all sessions\n",
     [MSG_HELP_OPT_ATTACH] = "  -s <id>    Attach to detached session by id\n",
     [MSG_HELP_OPT_KILL] = "  -k <id>    Kill session by id\n",
+    [MSG_HELP_OPT_NEW] = "  -n, --new-session  Create a new session in background\n",
     [MSG_HELP_OPT_HELP] = "  -h         Show this help message\n\n",
     [MSG_HELP_KEYBINDINGS] = "Key bindings:\n",
     [MSG_HELP_KEY_DETACH] = "  Ctrl+B d   Detach from current session\n",
@@ -65,6 +66,7 @@ static const char *messages_en[MSG_COUNT] = {
     [MSG_HELP_EX_LIST] = "  %s -l        List all sessions\n",
     [MSG_HELP_EX_ATTACH] = "  %s -s 0      Attach to session 0\n",
     [MSG_HELP_EX_KILL] = "  %s -k 0      Kill session 0\n",
+    [MSG_HELP_EX_NEW_DETACH] = "  %s --new-session  Create a new detached session\n",
 
     /* 错误信息 - 各类操作失败时显示 */
     [MSG_ERR_MKDIR] = "mkdir failed\n",
@@ -105,6 +107,7 @@ static const char *messages_zh[MSG_COUNT] = {
     [MSG_HELP_OPT_LIST] = "  -l         列出所有会话\n",
     [MSG_HELP_OPT_ATTACH] = "  -s <id>    连接到指定会话\n",
     [MSG_HELP_OPT_KILL] = "  -k <id>    终止指定会话\n",
+    [MSG_HELP_OPT_NEW] = "  -n, --new-session  在后台创建新会话\n",
     [MSG_HELP_OPT_HELP] = "  -h         显示帮助信息\n\n",
     [MSG_HELP_KEYBINDINGS] = "快捷键:\n",
     [MSG_HELP_KEY_DETACH] = "  Ctrl+B d   分离当前会话\n",
@@ -117,6 +120,7 @@ static const char *messages_zh[MSG_COUNT] = {
     [MSG_HELP_EX_LIST] = "  %s -l        列出所有会话\n",
     [MSG_HELP_EX_ATTACH] = "  %s -s 0      连接到会话 0\n",
     [MSG_HELP_EX_KILL] = "  %s -k 0      终止会话 0\n",
+    [MSG_HELP_EX_NEW_DETACH] = "  %s --new-session  创建后台会话\n",
 
     /* 错误信息 - 各类操作失败时显示 */
     [MSG_ERR_MKDIR] = "创建目录失败\n",

@@ -66,6 +66,7 @@ static void print_help(const char *prog) {
   printf("%s", TR(MSG_HELP_OPT_LIST));
   printf("%s", TR(MSG_HELP_OPT_ATTACH));
   printf("%s", TR(MSG_HELP_OPT_KILL));
+  printf("%s", TR(MSG_HELP_OPT_NEW));
   printf("%s", TR(MSG_HELP_OPT_HELP));
   printf("%s", TR(MSG_HELP_KEYBINDINGS));
   printf("%s", TR(MSG_HELP_KEY_DETACH));
@@ -78,6 +79,7 @@ static void print_help(const char *prog) {
   printf(TR(MSG_HELP_EX_LIST), prog);
   printf(TR(MSG_HELP_EX_ATTACH), prog);
   printf(TR(MSG_HELP_EX_KILL), prog);
+  printf(TR(MSG_HELP_EX_NEW_DETACH), prog);
 }
 
 int main(int argc, char *argv[]) {
