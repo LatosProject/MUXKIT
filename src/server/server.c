@@ -312,7 +312,8 @@ int server_receive(int fd) {
       int new_master_fd = posix_openpt(O_RDWR);
       if (new_master_fd == -1) {
         log_error("posix_openpt failed: %s", strerror(errno));
-        _exit(-1);
+        free(buf);
+        return -1;
       }
       // 解锁 slave 设备
       grantpt(new_master_fd);
@@ -335,7 +336,7 @@ int server_receive(int fd) {
       if (cur->slave_pid < 0) {
         log_error("spawn_child failed");
         close(new_master_fd);
-        _exit(-1);
+        return -1;
       }
 
       // 保存到数组
