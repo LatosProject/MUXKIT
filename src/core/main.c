@@ -39,6 +39,7 @@
 #include "client.h"
 #include "i18n.h"
 #include "log.h"
+#include "util.h"
 #include "version.h"
 #include <errno.h>
 #include <fcntl.h>
@@ -167,6 +168,13 @@ int main(int argc, char *argv[]) {
     open("/dev/null", O_RDONLY);
     open("/dev/null", O_WRONLY);
     open("/dev/null", O_WRONLY);
+  }
+
+  // 不允许嵌套运行
+  if (client_check_nested()) {
+    const char *msg = TR(MSG_NESTED_WARNING);
+    write(STDOUT_FILENO, msg, strlen(msg));
+    _exit(-1);
   }
 
   uid_t uid = getuid();
