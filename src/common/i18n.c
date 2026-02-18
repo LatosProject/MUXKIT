@@ -80,6 +80,8 @@ static const char *messages_en[MSG_COUNT] = {
     /* 会话管理 - 会话列表和操作反馈 */
     [MSG_SESSION_FORMAT] = "%d: %s (pid %d)\n",
     [MSG_NO_SESSIONS] = "(no sessions)\n",
+    [MSG_SESSION_DETACHED] = "detached",
+    [MSG_SESSION_ATTACHED] = "attached",
     [MSG_SESSION_KILLED] = "killed session %d\n",
     [MSG_SESSION_NOT_FOUND] = "session %d not found\n",
     [MSG_ATTACH_FAILED] =
@@ -134,6 +136,8 @@ static const char *messages_zh[MSG_COUNT] = {
     /* 会话管理 - 会话列表和操作反馈 */
     [MSG_SESSION_FORMAT] = "%d: %s (进程号 %d)\n",
     [MSG_NO_SESSIONS] = "(无会话)\n",
+    [MSG_SESSION_DETACHED] = "分离",
+    [MSG_SESSION_ATTACHED] = "已连接",
     [MSG_SESSION_KILLED] = "已终止会话 %d\n",
     [MSG_SESSION_NOT_FOUND] = "会话 %d 不存在\n",
     [MSG_ATTACH_FAILED] = "连接失败: 会话 %d 不存在或未分离\n",

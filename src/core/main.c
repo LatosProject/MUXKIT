@@ -84,6 +84,10 @@ static void print_help(const char *prog) {
 
 int main(int argc, char *argv[]) {
   i18n_init();
+  if (argc == 2 && strcmp(argv[1], "new-session") == 0) {
+    new_session_detach = 1;
+    optind = argc;
+  }
   int opt;
   int option_index = 0;
   static struct option long_options[] = {
@@ -126,6 +130,10 @@ int main(int argc, char *argv[]) {
       new_session_detach = 1;
       break;
     case '?':
+      if (optind < argc && strcmp(argv[optind], "new-session") == 0) {
+        optind++;
+        continue;
+      }
       printf("%s", TR(MSG_ERR_COMMAND));
       return -1;
     default:

@@ -216,9 +216,9 @@ int server_receive(int fd) {
       // 列出有效会话
       if (s->slave_pid > 0) {
         count++;
-        const char *status = s->detached ? "detached" : "attached";
+        const char *status = s->detached ? TR(MSG_SESSION_DETACHED) : TR(MSG_SESSION_ATTACHED);
         offset += snprintf(response + offset, sizeof(response) - offset,
-                           "%d: %s (pid %d)\n", s->id, status, s->slave_pid);
+                           TR(MSG_SESSION_FORMAT), s->id, status, s->slave_pid);
       }
     }
 
@@ -646,6 +646,7 @@ void server_loop(int listen_fd) {
   服务器启动函数，返回连接到服务器的客户端socket fd
 */
 int server_start() {
+  i18n_init();
   // 初始化 session 链表
   list_init(&session_list);
   sigset_t set, oldset;
