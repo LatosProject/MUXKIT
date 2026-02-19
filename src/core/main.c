@@ -180,9 +180,25 @@ int main(int argc, char *argv[]) {
 
   uid_t uid = getuid();
 
-  // 初始化程序目录
-  char dir[MUXKIT_BUF_SMALL] = {0};
-  snprintf(dir, sizeof(dir), "%smuxkit-%d", MUXKIT_SOCK, uid);
+  // 初始化程序目录 (~/.local/share/muxkit/muxkit-<uid>)
+  const char *home = getenv("HOME");
+  if (!home) {
+    fprintf(stderr, "Error: HOME environment variable not set\n");
+    return -1;
+  }
+
+  char dir[MUXKIT_BUF_PATH] = {0};
+  snprintf(dir, sizeof(dir), "%s/%s/muxkit-%d", home, MUXKIT_SOCK_DIR, uid);
+
+  // 创建父目录 ~/.local/share/muxkit
+  char parent_dir[MUXKIT_BUF_PATH] = {0};
+  snprintf(parent_dir, sizeof(parent_dir), "%s/%s", home, MUXKIT_SOCK_DIR);
+  if (mkdir(parent_dir, 0700) != 0 && errno != EEXIST) {
+    perror(TR(MSG_ERR_MKDIR));
+    return -1;
+  }
+
+  // 创建会话目录
   if (mkdir(dir, 0700) != 0 && errno != EEXIST) {
     perror(TR(MSG_ERR_MKDIR));
     return -1;
@@ -193,7 +209,7 @@ int main(int argc, char *argv[]) {
     return -1;
   }
 
-  static char buf[MUXKIT_BUF_SMALL] = {0};
+  static char buf[MUXKIT_BUF_PATH] = {0};
   snprintf(buf, sizeof(buf), "%s/default", dir);
   socket_path = buf;
   client_init(&client);

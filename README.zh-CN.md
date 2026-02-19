@@ -136,7 +136,7 @@ muxkit -h
 
 ### 配置
 
-配置文件位于 `/tmp/muxkit-<uid>/`：
+配置文件位于 `~/.local/share/muxkit/muxkit-<uid>/`：
 - `keybinds.conf` - 自定义快捷键（可选）
 
 `keybinds.conf` 示例：
@@ -236,14 +236,14 @@ doxygen Doxyfile
 
 ### 调试
 
-使用详细日志运行 muxkit。日志文件将创建在 `/tmp/muxkit-<uid>/`：
+使用详细日志运行 muxkit。日志文件将创建在 `~/.local/share/muxkit/muxkit-<uid>/`：
 - `client.log` - 客户端日志
 - `server.log` - 服务器日志
 
 查看调试日志：
 ```bash
-tail -f /tmp/muxkit-$(id -u)/client.log
-tail -f /tmp/muxkit-$(id -u)/server.log
+tail -f ~/.local/share/muxkit/muxkit-$(id -u)/client.log
+tail -f ~/.local/share/muxkit/muxkit-$(id -u)/server.log
 ```
 
 ### 技术细节

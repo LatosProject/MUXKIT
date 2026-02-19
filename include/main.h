@@ -19,9 +19,12 @@
 /* 默认 shell 配置（取消注释以强制使用特定 shell） */
 // #define MUXKIT_DEFAULT_SHELL
 
-/* Unix 域套接字存放目录，默认为 /tmp */
+/* Unix 域套接字存放目录
+ * 使用 XDG Base Directory 规范：~/.local/share/muxkit/
+ * 如需使用 /tmp，可在编译时定义 -DMUXKIT_SOCK=\"/tmp/\"
+ */
 #ifndef MUXKIT_SOCK
-#define MUXKIT_SOCK _PATH_TMP
+#define MUXKIT_SOCK_DIR ".local/share/muxkit"
 #endif
 
 /*

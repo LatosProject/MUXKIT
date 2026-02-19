@@ -137,7 +137,7 @@ All commands are prefixed with `Ctrl+B`:
 
 ### Configuration
 
-Configuration files are located in `/tmp/muxkit-<uid>/`:
+Configuration files are located in `~/.local/share/muxkit/muxkit-<uid>/`:
 - `keybinds.conf` - Custom key bindings (optional)
 
 Example `keybinds.conf`:
@@ -237,14 +237,14 @@ doxygen Doxyfile
 
 ### Debugging
 
-Run muxkit with verbose logging. Log files will be created in `/tmp/muxkit-<uid>/`:
+Run muxkit with verbose logging. Log files will be created in `~/.local/share/muxkit/muxkit-<uid>/`:
 - `client.log` - Client log
 - `server.log` - Server log
 
 Check logs for debugging:
 ```bash
-tail -f /tmp/muxkit-$(id -u)/client.log
-tail -f /tmp/muxkit-$(id -u)/server.log
+tail -f ~/.local/share/muxkit/muxkit-$(id -u)/client.log
+tail -f ~/.local/share/muxkit/muxkit-$(id -u)/server.log
 ```
 
 ### Technical Details
