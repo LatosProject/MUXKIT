@@ -130,6 +130,7 @@ All commands are prefixed with `Ctrl+B`:
 | `Ctrl+B` `o` | Switch to next pane |
 | `Ctrl+B` `[` | Scroll up (view history) |
 | `Ctrl+B` `]` | Scroll down |
+| `Ctrl+B` `s` | Toggle synchronized input mode |
 | `Ctrl+B` `Ctrl+B` | Send literal Ctrl+B to shell |
 
 **Note**: Press `Esc` or `q` to exit scroll mode.
@@ -154,6 +155,7 @@ Available actions:
 - `next_pane` - Switch to next pane
 - `scroll_up` - Scroll up to view history
 - `scroll_down` - Scroll down
+- `sync_input` - Toggle synchronized input mode (bar cursor)
 
 ### Project Structure
 

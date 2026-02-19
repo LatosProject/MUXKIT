@@ -275,10 +275,16 @@ void render_pane(struct window_pane *p) {
     write(STDOUT_FILENO, CURSOR_HIDE, 6);
   } else {
     // 光标移动到 pane 内的正确位置
-    int clen = snprintf(buf, sizeof(buf), "\033[%u;%uH", p->yoff + p->cy + 1,
-                        p->xoff + p->cx + 1);
+    struct client *c = container_of(p, struct client, pane);
+    int clen;
+    if (c->sync_input_mode) {
+      clen = snprintf(buf, sizeof(buf), "\033[%u;%uH\033[6 q",
+                      p->yoff + p->cy + 1, p->xoff + p->cx + 1);
+    } else {
+      clen = snprintf(buf, sizeof(buf), "\033[%u;%uH\033[2 q", p->yoff + p->cy + 1,
+                      p->xoff + p->cx + 1);
+    }
     write(STDOUT_FILENO, buf, clen);
-    // 显示光标
     write(STDOUT_FILENO, CURSOR_SHOW, 6);
   }
 }
@@ -373,9 +379,16 @@ void render_status_bar(struct client *c) {
   write(STDOUT_FILENO, "\033[0m", 4);
   if (c->pane->grid->scroll_offset == 0) {
     // 光标移动到 pane 内的正确位置 （vt解析）
-    int clen = snprintf(buf, sizeof(buf), "\033[%u;%uH",
-                        c->pane->yoff + c->pane->cy + 1,
-                        c->pane->xoff + c->pane->cx + 1);
+    int clen;
+    if (c->sync_input_mode) {
+      clen = snprintf(buf, sizeof(buf), "\033[%u;%uH\033[6 q",
+                      c->pane->yoff + c->pane->cy + 1,
+                      c->pane->xoff + c->pane->cx + 1);
+    } else {
+      clen = snprintf(buf, sizeof(buf), "\033[%u;%uH\033[2 q",
+                      c->pane->yoff + c->pane->cy + 1,
+                      c->pane->xoff + c->pane->cx + 1);
+    }
     write(STDOUT_FILENO, buf, clen);
     write(STDOUT_FILENO, CURSOR_SHOW, 6);
   }
@@ -392,9 +405,17 @@ void render_pane_borders(struct window_pane *p) {
                        p->yoff + y + 1, p->xoff + p->sx + 1);
     write(STDOUT_FILENO, buf, len);
   }
+
   // 光标移动到 pane 内的正确位置 （vt解析）
-  int clen = snprintf(buf, sizeof(buf), "\033[%u;%uH", p->yoff + p->cy + 1,
-                      p->xoff + p->cx + 1);
+  int clen;
+  struct client *c = container_of(p, struct client, pane);
+  if (c->sync_input_mode) {
+    clen = snprintf(buf, sizeof(buf), "\033[%u;%uH\033[6 q", p->yoff + p->cy + 1,
+                    p->xoff + p->cx + 1);
+  } else {
+    clen = snprintf(buf, sizeof(buf), "\033[%u;%uH\033[2 q", p->yoff + p->cy + 1,
+                    p->xoff + p->cx + 1);
+  }
   write(STDOUT_FILENO, buf, clen);
   write(STDOUT_FILENO, CURSOR_SHOW, 6);
 }

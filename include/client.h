@@ -50,10 +50,10 @@
  * 用于有限状态机 (FSM) 控制客户端行为
  */
 typedef enum {
-  ST_BOOT,      /* 启动状态 */
-  ST_RUNNING,   /* 正常运行状态 */
-  ST_RESIZING,  /* 调整尺寸中 */
-  ST_EXITING,   /* 退出中 */
+  ST_BOOT,     /* 启动状态 */
+  ST_RUNNING,  /* 正常运行状态 */
+  ST_RESIZING, /* 调整尺寸中 */
+  ST_EXITING,  /* 退出中 */
 } client_state;
 
 /**
@@ -71,6 +71,7 @@ typedef enum {
   EV_ENABLE_RAW_MODE, /* 启用原始模式 */
   EV_DETACHED,        /* 会话分离 */
   EV_PANE_SPLIT,      /* 分割窗格 */
+  EV_SYNC_INPUT,      /* 同步输入 */
 } client_event;
 
 /**
@@ -78,18 +79,19 @@ typedef enum {
  * 存储客户端运行时的所有状态信息
  */
 struct client {
-  client_state state;           /* 当前状态 */
-  int server_fd;                /* 与 server 的连接 fd */
-  int master_fd;                /* PTY 主端 fd */
-  int slave_fd;                 /* PTY 从端 fd */
-  pid_t slave_pid;              /* 子进程 PID */
-  struct winsize ws;            /* 终端窗口尺寸 */
-  struct termios orig_termios;  /* 原始终端属性 (用于恢复) */
-  int child_exited;             /* 子进程退出标志 */
-  struct termios raw;           /* 原始模式终端属性 */
-  char *slave_name;             /* PTY 从端设备名 */
-  struct environ *environ;      /* 环境变量 */
-  struct window_pane *pane;     /* 当前活动窗格 */
+  client_state state;          /* 当前状态 */
+  int server_fd;               /* 与 server 的连接 fd */
+  int master_fd;               /* PTY 主端 fd */
+  int slave_fd;                /* PTY 从端 fd */
+  pid_t slave_pid;             /* 子进程 PID */
+  struct winsize ws;           /* 终端窗口尺寸 */
+  struct termios orig_termios; /* 原始终端属性 (用于恢复) */
+  int child_exited;            /* 子进程退出标志 */
+  struct termios raw;          /* 原始模式终端属性 */
+  char *slave_name;            /* PTY 从端设备名 */
+  struct environ *environ;     /* 环境变量 */
+  struct window_pane *pane;    /* 当前活动窗格 */
+  int sync_input_mode;
 };
 
 /**
@@ -102,10 +104,10 @@ typedef void (*action_fn)(struct client *c, client_event ev);
  * 定义 (当前状态, 事件) -> (下一状态, 动作) 的映射
  */
 typedef struct {
-  client_state state;   /* 当前状态 */
-  client_event event;   /* 触发事件 */
-  client_state next;    /* 下一状态 */
-  action_fn action;     /* 执行的动作函数 */
+  client_state state; /* 当前状态 */
+  client_event event; /* 触发事件 */
+  client_state next;  /* 下一状态 */
+  action_fn action;   /* 执行的动作函数 */
 } state_transition;
 
 /* ============ 客户端核心函数 ============ */
@@ -153,5 +155,8 @@ void act_detach(struct client *c, client_event ev);
 
 /** 处理窗格分割 */
 void act_pane_split(struct client *c, client_event ev);
+
+/** 处理输入同步 **/
+void act_sync_input(struct client *c, client_event ev);
 
 #endif /* CLIENT_H */

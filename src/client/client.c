@@ -301,7 +301,15 @@ void act_stdin_read(struct client *c, client_event ev) {
           continue;
         }
       }
-      write(c->pane->master_fd, &buff[i], 1);
+      if (c->sync_input_mode) {
+        // 广播到所有 pane
+        struct window_pane *p;
+        list_for_each_entry(p, &c->pane->window->panes, link) {
+          write(p->master_fd, &buff[i], 1);
+        }
+      } else {
+        write(c->pane->master_fd, &buff[i], 1);
+      }
     }
   }
 }
@@ -413,7 +421,7 @@ void client_init(struct client *c) {
   c->slave_fd = -1;  // 子进程
   c->slave_pid = -1;
   c->child_exited = 0;
-
+  c->sync_input_mode = 0;
   tcgetattr(STDIN_FILENO, &(c->orig_termios));
   ioctl(STDIN_FILENO, TIOCGWINSZ, &(c->ws));
 }

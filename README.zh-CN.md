@@ -129,6 +129,7 @@ muxkit -h
 | `Ctrl+B` `o` | 切换到下一窗格 |
 | `Ctrl+B` `[` | 向上滚动（查看历史） |
 | `Ctrl+B` `]` | 向下滚动 |
+| `Ctrl+B` `s` | 切换同步输入模式 |
 | `Ctrl+B` `Ctrl+B` | 发送 Ctrl+B 到 shell |
 
 **注意**：按 `Esc` 或 `q` 退出滚动模式。
@@ -153,6 +154,7 @@ prefix ] scroll_down
 - `next_pane` - 切换到下一个窗格
 - `scroll_up` - 向上滚动查看历史
 - `scroll_down` - 向下滚动
+- `sync_input` - 切换同步输入模式（竖线光标）
 
 ### 项目结构
 

@@ -75,6 +75,7 @@ static void print_help(const char *prog) {
   printf("%s", TR(MSG_HELP_KEY_NEXT));
   printf("%s", TR(MSG_HELP_KEY_SCROLL_UP));
   printf("%s", TR(MSG_HELP_KEY_SCROLL_DOWN));
+  printf("%s", TR(MSG_HELP_KEY_SYNC_INPUT));
   printf("%s", TR(MSG_HELP_EXAMPLES));
   printf(TR(MSG_HELP_EX_NEW), prog);
   printf(TR(MSG_HELP_EX_LIST), prog);

@@ -87,12 +87,24 @@ void scroll_down(struct client *c) {
   }
 }
 
+void sync_input(struct client *c) {
+  if (!c->sync_input_mode) {
+    if (c->pane && c->pane->grid) {
+      c->sync_input_mode = 1;
+      dispatch_event(c, EV_SYNC_INPUT);
+      render_pane(c->pane);
+      render_status_bar(c);
+    }
+  } else {
+    c->sync_input_mode = 0;
+  }
+}
+
 static struct keybind keybinds[MAX_KEYBINDS];
 struct action_map actions[] = {
     {"detach_session", detach_session}, {"new_pane", new_pane},
     {"next_pane", next_pane},           {"scroll_up", scroll_up},
-    {"scroll_down", scroll_down},
-};
+    {"scroll_down", scroll_down},       {"sync_input", sync_input}};
 int keybind_count = 0;
 
 void handle_key(struct client *c, enum key_table table, char key) {
@@ -117,6 +129,7 @@ void keybind_init() {
   keybinds[keybind_count++] = (struct keybind){'o', KEY_PREFIX, next_pane};
   keybinds[keybind_count++] = (struct keybind){'[', KEY_PREFIX, scroll_up};
   keybinds[keybind_count++] = (struct keybind){']', KEY_PREFIX, scroll_down};
+  keybinds[keybind_count++] = (struct keybind){'s', KEY_PREFIX, sync_input};
 
   // tmp/muxkit-1000/default -> /tmp/muxkit-1000/
   char dirpath[MUXKIT_BUF_PATH];
