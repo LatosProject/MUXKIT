@@ -58,7 +58,7 @@ makepkg -si
 git clone https://github.com/LatosProject/muxkit.git
 cd muxkit
 dpkg-buildpackage -us -uc -b
-sudo dpkg -i ../muxkit_0.4.3-1_*.deb
+sudo dpkg -i ../muxkit_0.4.4-1_*.deb
 ```
 
 #### Fedora / RHEL
@@ -276,6 +276,6 @@ MIT License - Copyright (c) 2024 LatosProject
 
 ---
 
-**版本**: 0.4.3
+**版本**: 0.4.4
 **作者**: LatosProject
 **主页**: https://github.com/LatosProject/muxkit

@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.10)
-project(muxkit VERSION 0.4.3)
+project(muxkit VERSION 0.4.4)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 add_compile_definitions(_DEFAULT_SOURCE)
 

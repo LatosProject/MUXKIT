@@ -28,7 +28,7 @@
 #ifndef VERSION_H
 #define VERSION_H
 
-#define MUXKIT_VERSION "0.4.3"
+#define MUXKIT_VERSION "0.4.4"
 #define MUXKIT_VERSION_STRING "muxkit v" MUXKIT_VERSION
 
 #endif /* VERSION_H */
